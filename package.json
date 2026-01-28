@@ -8,12 +8,16 @@
     "start:prod": "docker compose -f docker-compose.prod.yml up --build -d",
     "install:all": "pnpm -w install",
     "lint": "pnpm -r lint",
+    "type-check": "pnpm -r exec tsc --noEmit",
     "test": "pnpm -r test",
     "build:frontend": "pnpm --filter frontend build",
     "build:backend": "echo \"backend build (none)\"",
     "build": "pnpm build:frontend && pnpm build:backend"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@types/node": "^25.0.10",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

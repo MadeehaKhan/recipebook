@@ -10,3 +10,5 @@ build/
 *.log
 coverage/
 pnpm-debug.log*
+*.sh
+*.pnpm-store
