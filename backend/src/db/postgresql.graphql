@@ -1,0 +1,49 @@
+type Recipe {
+  id: ID!
+  title: String!
+  version: Float!
+  description: String
+  createdAt: String!
+  updatedAt: String!
+  instructions: [Instruction!]!
+  ingredients: [Ingredient!]!
+  category: Category!
+  cookTimeMinutes: Int!
+  prepTimeMinutes: Int!
+  servings: Float!
+  notes: [String!]
+  substitutions: [Substitution!]!
+  contributedBy: String!
+}
+
+type Instruction {
+  id: ID!
+  recipeId: ID!
+  stepNumber: Int!
+  description: String!
+}
+
+type IngredientBase {
+    id: ID!
+    name: String!
+    type: String
+}
+
+type Ingredient {
+  base: IngredientBase!
+  quantity: String!
+  unit: String!
+}
+
+type Category {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type Substitution {
+  originalIngredientId: String!
+  substituteIngredientId: String!
+  notes: String
+  ratio: Float!
+}
