@@ -58,7 +58,7 @@ chmod +x load_seed.sh
 ./load_seed.sh
 ```
 
-## Database Schema
+## Database Schema (Updated)
 
 ### Tables
 
@@ -70,14 +70,51 @@ chmod +x load_seed.sh
 - **recipe_notes** - Tips and notes for recipes
 - **substitutions** - Ingredient substitution mappings
 
-### Foreign Keys & Constraints
+### Relationships & Constraints
 
-- Recipes → Categories (ON DELETE RESTRICT)
-- Recipe Ingredients → Recipes (ON DELETE CASCADE)
-- Recipe Ingredients → Ingredient Bases (ON DELETE RESTRICT)
-- Instructions → Recipes (ON DELETE CASCADE)
-- Recipe Notes → Recipes (ON DELETE CASCADE)
-- Substitutions → Ingredient Bases (ON DELETE CASCADE)
+- recipes.category_id → categories.id (ON DELETE RESTRICT)
+- recipe_ingredients.recipe_id → recipes.id (ON DELETE CASCADE)
+- recipe_ingredients.ingredient_base_id → ingredient_bases.id (ON DELETE RESTRICT)
+- instructions.recipe_id → recipes.id (ON DELETE CASCADE)
+- recipe_notes.recipe_id → recipes.id (ON DELETE CASCADE)
+- substitutions.ingredient_base_id → ingredient_bases.id (ON DELETE CASCADE)
+
+### Indexes
+
+- Primary keys on all tables
+- Foreign key indexes for faster joins
+- Additional indexes defined in init.sql to optimize common queries
+
+## Docker Services (Updated)
+
+- postgres (port 5432)
+  - Volume: persists data (e.g., db-data)
+  - Init: mounts backend/src/db/docker-init.sh to /docker-entrypoint-initdb.d/ for automatic schema creation
+- backend (port 5000)
+  - Depends on postgres
+  - Environment: PORT, NODE_ENV, DATABASE_URL, RATE_LIMIT_MAX, PG_POOL_MAX, PG_IDLE_TIMEOUT, PG_CONN_TIMEOUT
+  - Health check endpoint: /api/health (if enabled)
+- frontend (port 5173)
+  - Environment: VITE_API_URL (points to backend)
+
+Common operations:
+
+```bash
+docker-compose ps
+docker-compose logs -f
+docker-compose down -v && docker-compose up --build
+```
+
+Seeding (Docker):
+
+```bash
+./backend/src/db/seed_docker.sh
+```
+
+Manual seeding:
+
+- Windows: backend/src/db/load_seed.bat
+- macOS/Linux: backend/src/db/load_seed.sh
 
 ## Connection Details
 
