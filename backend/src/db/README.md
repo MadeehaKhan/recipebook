@@ -1,76 +1,149 @@
 # RecipeBook Database Setup
 
-This directory contains scripts and SQL files for initializing and seeding the RecipeBook PostgreSQL database.
+This directory contains scripts and instructions for initializing and working with the RecipeBook PostgreSQL database.
 
-## Files
+## Overview
 
-- **init.sql** - Creates the RecipeBook database schema (tables, constraints, indexes)
-- **seed.sql** - Seeds data from CSV files (requires .env.local with DATA_DIR)
-- **docker-init.sh** - Docker initialization script (runs automatically on container start)
-- **seed_docker.sh** - Seeds data in running Docker containers
-- **.env.local** - Environment configuration (not committed to git)
+- Database: PostgreSQL (dev: 16 recommended)
+- Connection string (backend/.env):
 
-## Docker Setup (Recommended)
+  ```env
+  DATABASE_URL=postgresql://postgres:password@postgres:5432/recipebook  # Docker
+  # Or for local PostgreSQL:
+  # DATABASE_URL=postgresql://postgres:password@localhost:5432/recipebook
+  ```
 
-### Quick Start
+- Primary script:
+  - `init-db.sh` — creates the `recipebook` database and initializes schema; seeds simple dev data when `NODE_ENV=development`.
+
+## Prerequisites
+
+- PostgreSQL client (psql) available in your shell
+- One of:
+  - Docker & Docker Compose
+  - Local PostgreSQL 16 running on Windows
+- Shell to run bash scripts on Windows:
+  - WSL (Windows Subsystem for Linux) or
+  - Git Bash
+
+## Using Docker (recommended)
+
+1. Start services
+
+```sh
+pnpm start:dev
+```
+or
+```sh
+#./backend
+npm start dev
+
+#./frontend (new terminal)
+npm start dev
+```
+- Backend: http://localhost:5000
+- Frontend: http://localhost:5173
+- Postgres: localhost:5432 (container host name: `postgres`)
+
+2. Initialize the database
+
+- Option A: Let `docker-compose.yml` handle creating, initializing, and seeding the data (you do nothing but run `pnpm start:dev`
+):
+
+```yml
+env_file:
+    - ./backend/.env
+environment:
+    NODE_ENV: development
+volumes:
+    - postgres-data:/var/lib/postgresql/data
+    - ./backend/src/db/init-db.sh:/docker-entrypoint-initdb.d/01-init-db.sh
+ports:
+    - "5432:5432"
+```
+
+- Option B: If you prefer Git Bash:
+
+```sh
+$env:NODE_ENV="development"
+bash ./backend/src/db/init-db.sh
+```
+
+3. Verify
+
+```powershell
+psql -U postgres -h localhost -p 5432 -d recipebook -c "SHOW server_version;"
+psql -U postgres -h localhost -p 5432 -d recipebook -c "SELECT COUNT(*) FROM pg_tables WHERE schemaname='public';"
+```
+
+Common Docker commands:
+
+```powershell
+docker compose ps
+docker compose logs -f postgres
+docker compose down -v && docker compose up --build
+```
+
+## Using Local PostgreSQL 16 (Windows)
+
+Use your local PostgreSQL 16 instead of Docker.
+
+1. Stop Docker postgres (free port 5432)
+
+```powershell
+docker compose stop postgres
+```
+
+2. Point backend to local DB
+
+```dotenv
+# filepath: c:\Users\madeeha\Projects\RecipeBook\backend\.env
+# ...existing code...
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/recipebook
+# ...existing code...
+```
+
+3. Ensure init script targets localhost
+   Update `init-db.sh` if needed:
 
 ```bash
-# Start all containers (automatically initializes database)
-npm run start:dev
-
-# Seed database with sample data
-./backend/src/db/seed_docker.sh
+# filepath: c:\Users\madeeha\Projects\RecipeBook\backend\src\db\init-db.sh
+# ...existing code...
+PSQL="psql -h localhost -p 5432 -U postgres"
+PSQL_DB="psql -h localhost -p 5432 -U postgres -d $DBNAME"
+# ...existing code...
 ```
 
-The database schema is automatically created when the PostgreSQL container starts, thanks to the `docker-init.sh` script mounted in `/docker-entrypoint-initdb.d/`.
+4. Run init script
 
-## Manual Setup (Without Docker)
-
-### 1. Initialize Database Schema
-
-```bash
-psql -U postgres -d postgres -f backend/src/db/init.sql
+```powershell
+$env:NODE_ENV="development"
+wsl bash ./backend/src/db/init-db.sh
+# or Git Bash:
+$env:NODE_ENV="development"
+bash ./backend/src/db/init-db.sh
 ```
 
-### 2. Seed with Sample Data
+5. Verify
 
-First, configure `backend/src/db/.env.local`:
-
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/recipebook
-DATA_DIR=C:/Users/madeeha/Projects/RecipeBook/sample_data
+```powershell
+psql -U postgres -h localhost -p 5432 -d recipebook -c "SHOW server_version;"
+psql -U postgres -h localhost -p 5432 -d recipebook -c "SELECT COUNT(*) FROM pg_tables WHERE schemaname='public';"
 ```
 
-Then run the seed script:
+## Database Schema
 
-**Windows:**
+Tables:
 
-```bash
-cd backend/src/db
-./load_seed.bat
-```
+- categories — Recipe categories
+- ingredient_bases — Base ingredient definitions
+- recipes — Main recipe records
+- recipe_ingredients — Junction table (recipes → ingredients)
+- instructions — Step-by-step cooking instructions
+- recipe_notes — Tips and notes for recipes
+- substitutions — Ingredient substitution mappings
 
-**macOS/Linux:**
-
-```bash
-cd backend/src/db
-chmod +x load_seed.sh
-./load_seed.sh
-```
-
-## Database Schema (Updated)
-
-### Tables
-
-- **categories** - Recipe categories
-- **ingredient_bases** - Base ingredient definitions
-- **recipes** - Main recipe records
-- **recipe_ingredients** - Junction table (recipes → ingredients)
-- **instructions** - Step-by-step cooking instructions
-- **recipe_notes** - Tips and notes for recipes
-- **substitutions** - Ingredient substitution mappings
-
-### Relationships & Constraints
+Relationships & constraints:
 
 - recipes.category_id → categories.id (ON DELETE RESTRICT)
 - recipe_ingredients.recipe_id → recipes.id (ON DELETE CASCADE)
@@ -79,78 +152,43 @@ chmod +x load_seed.sh
 - recipe_notes.recipe_id → recipes.id (ON DELETE CASCADE)
 - substitutions.ingredient_base_id → ingredient_bases.id (ON DELETE CASCADE)
 
-### Indexes
+Indexes:
 
 - Primary keys on all tables
-- Foreign key indexes for faster joins
-- Additional indexes defined in init.sql to optimize common queries
+- Foreign key indexes on relationship columns
+- Additional indexes for common lookups (e.g., category_id, contributor)
 
-## Docker Services (Updated)
-
-- postgres (port 5432)
-  - Volume: persists data (e.g., db-data)
-  - Init: mounts backend/src/db/docker-init.sh to /docker-entrypoint-initdb.d/ for automatic schema creation
-- backend (port 5000)
-  - Depends on postgres
-  - Environment: PORT, NODE_ENV, DATABASE_URL, RATE_LIMIT_MAX, PG_POOL_MAX, PG_IDLE_TIMEOUT, PG_CONN_TIMEOUT
-  - Health check endpoint: /api/health (if enabled)
-- frontend (port 5173)
-  - Environment: VITE_API_URL (points to backend)
-
-Common operations:
-
-```bash
-docker-compose ps
-docker-compose logs -f
-docker-compose down -v && docker-compose up --build
-```
-
-Seeding (Docker):
-
-```bash
-./backend/src/db/seed_docker.sh
-```
-
-Manual seeding:
-
-- Windows: backend/src/db/load_seed.bat
-- macOS/Linux: backend/src/db/load_seed.sh
+Note: Ensure your `init-db.sh` contains the full CREATE TABLE statements for the above schema (remove placeholder sections and trailing commas).
 
 ## Connection Details
 
-**Development:**
-
-- Host: `localhost` or `postgres` (if using Docker)
+- Host: `localhost` (local) or `postgres` (Docker)
 - Port: `5432`
 - Database: `recipebook`
 - User: `postgres`
-- Password: Set in `backend/.env`
+- Password: set in `backend/.env`
 
 ## Troubleshooting
 
-**Error: Database already exists**
-
-- Safe to ignore if tables already created
-- Drop database to reset: `DROP DATABASE recipebook;`
-
-**CSV files not found (when using seed.sql)**
-
-- Verify `DATA_DIR` in `.env.local` points to `sample_data/` folder
-- Use absolute paths, not relative paths
-
-**Docker container initialization failed**
-
-- Check Docker logs: `docker-compose logs postgres`
-- Ensure `backend/src/db/docker-init.sh` exists and is readable
+- Port conflicts:
+  - If local Postgres uses 5432, map Docker Postgres to 5433 in docker-compose or stop the container.
+- Re-initialize:
+  ```sql
+  -- In psql:
+  DROP DATABASE recipebook;
+  ```
+  Then rerun `init-db.sh`.
+- psql not found:
+  - Use full path to psql (e.g., `C:\Program Files\PostgreSQL\16\bin\psql.exe`) or run inside WSL/Git Bash.
+- No tables created:
+  - Review `init-db.sh` for accurate CREATE TABLE statements and host/port settings.
+- Seed data:
+  - `init-db.sh` seeds sample data only when `NODE_ENV=development`. Adjust or add a dedicated seed script as needed.
 
 ## Sample Data
 
-Sample CSV files are located in the `sample_data/` directory at the project root:
+If you maintain sample CSVs (optional), store them under `sample_data/` at the project root:
 
-- categories.csv (8 records)
-- ingredient_bases.csv (20 records)
-- recipes.csv (7 records)
-- recipe_ingredients.csv (44 records)
-- instructions.csv (44 records)
-- recipe_notes.csv (17 records)
-- substitutions.csv (12 records)
+- categories.csv, ingredient_bases.csv, recipes.csv, recipe_ingredients.csv, instructions.csv, recipe_notes.csv, substitutions.csv
+
+Use a dedicated seed script to load CSVs, or extend `init-db.sh` for seeding.
