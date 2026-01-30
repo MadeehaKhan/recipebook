@@ -8,11 +8,11 @@ export default defineConfig({
     host: true,
     proxy: {
       // Forward /api requests to backend in dev
-      // "/api": {
-      //   target: "http://backend:5000",
-      //   changeOrigin: true,
-      //   secure: false,
-      // },
+       "/health": {
+         target: "http://backend:5000",
+         changeOrigin: true,
+         secure: false,
+       },
     },
   },
   build: {

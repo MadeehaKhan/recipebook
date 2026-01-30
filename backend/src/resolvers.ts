@@ -1,63 +1,55 @@
 import {
+  EntityIdArgs,
+  RecipesWithStringsArgs,
+  RecipeArgs,
+  ModifyRecipeArgs,
+} from "./models";
+import {
   getAllRecipes,
   getRecipeById,
   getRecipesByCategory,
   getRecipesByIngredient,
   getRecipesByKeyword,
 } from "./db/queries";
-import {
-  EntityIdArgs,
-  ModifyRecipeArgs,
-  RecipeArgs,
-  RecipesWithStringsArgs,
-  SubstitutionArgs,
-} from "./models";
 
 export const resolvers = {
   Query: {
-    recipes: async (parent, args: { limit?: number }) => {
-      const { limit } = args;
-      // Implementation for fetching all recipes
-      return await getAllRecipes(limit);
+    recipes: async (_parent: any, args: { limit?: number }) => {
+      return await getAllRecipes(args.limit);
     },
-    recipe: async (parent, args: EntityIdArgs) => {
-      const { id } = args;
-      // Implementation for fetching a single recipe by ID
-      return await getRecipeById(id);
+    recipe: async (_parent: any, args: EntityIdArgs) => {
+      return await getRecipeById(args.id);
     },
-    recipesByCategory: async (parent, args: RecipesWithStringsArgs) => {
-      const { discriminator, limit } = args;
-      // Implementation for fetching recipes by category
-      return await getRecipesByCategory(discriminator, limit);
+    recipesByCategory: async (_parent: any, args: RecipesWithStringsArgs) => {
+      return await getRecipesByCategory(args.discriminator, args.limit);
     },
-    recipesByIngredient: async (parent, args: RecipesWithStringsArgs) => {
-      const { discriminator, limit } = args; 
-      // Implementation for fetching recipes by ingredient
-      return await getRecipesByIngredient(discriminator, limit);
+    recipesByIngredient: async (_parent: any, args: RecipesWithStringsArgs) => {
+      return await getRecipesByIngredient(args.discriminator, args.limit);
     },
-    recipesByKeyword: async (parent, args: RecipesWithStringsArgs) => {
-      const { discriminator, limit } = args;
-      // Implementation for fetching recipes by keyword
-      return await getRecipesByKeyword(discriminator, limit);
+    recipesByKeyword: async (_parent: any, args: RecipesWithStringsArgs) => {
+      return await getRecipesByKeyword(args.discriminator, args.limit);
     },
   },
 
   Mutation: {
-    // Mutation resolvers go here
-    addRecipe: async (parent, args: RecipeArgs) => {
-      // Implementation for adding a recipe
+    addRecipe: async (_parent: any, args: { input: RecipeArgs }) => {
+      // Implementation here
+      throw new Error("Not implemented");
     },
-    modifyRecipe: async (parent, args: ModifyRecipeArgs) => {
-      // Implementation for modifying a recipe
+    modifyRecipe: async (
+      _parent: any,
+      args: { id: string; input: RecipeArgs },
+    ) => {
+      // Implementation here
+      throw new Error("Not implemented");
     },
-    deleteRecipe: async (parent, args: EntityIdArgs) => {
-      // Implementation for deleting a recipe
+    deleteRecipe: async (_parent: any, args: EntityIdArgs) => {
+      // Implementation here
+      throw new Error("Not implemented");
     },
-    addSubstitution: async (parent, args: SubstitutionArgs) => {
-      // Implementation for adding a substitution
-    },
-    getSubstitutions: async (parent, args) => {
-      // Implementation for getting substitutions
+    addSubstitution: async (_parent: any, args: any) => {
+      // Implementation here
+      throw new Error("Not implemented");
     },
   },
 };

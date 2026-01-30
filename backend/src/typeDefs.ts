@@ -8,10 +8,10 @@ export const typeDefs = `
   },
 
   type Mutation {
-    addRecipe(title: String!, ingredients: [Ingredient!]!, instructions: [Instruction!]!, category: Category!, contributedBy: String!, cookTimeMinutes: Int!, prepTimeMinutes: Int!, totalTimeMinutes: Int!, servings: Float!, notes: [String!], substitutions: [Substitution!]): Recipe!
-    modifyRecipe(id: ID!, title: String, ingredients: [Ingredient!], instructions: [Instruction!], category: Category, contributedBy: String, cookTimeMinutes: Int, prepTimeMinutes: Int, totalTimeMinutes: Int, servings: Float, notes: [String!], substitutions: [Substitution!]): Recipe!
+    addRecipe(input:RecipeInput): Recipe!
+    modifyRecipe(id: ID!, input: RecipeInput): Recipe!
     deleteRecipe(id: ID!): Boolean!
-    addSubstitution(originalIngredient: String!, substituteIngredient: String!, ratio: Float!): Substitution!
+    addSubstitution(input: SubstitutionInput): Substitution!
     getSubstitutions(ingredient: String!): [Substitution!]!
   },
 
@@ -31,7 +31,48 @@ export const typeDefs = `
     servings: Float!
     notes: [String!]
     substitutions: [Substitution!]
-  },    
+  },  
+
+  input RecipeInput {
+    title: String!
+    ingredients: [IngredientInput!]!
+    instructions: [InstructionInput!]!
+    category: CategoryInput!
+    contributedBy: String!
+    cookTimeMinutes: Int!
+    prepTimeMinutes: Int!
+    totalTimeMinutes: Int!
+    servings: Float!
+    notes: [String!]
+    substitutions: [SubstitutionInput!]
+    },
+  input IngredientInput {
+    base: IngredientBaseInput!
+    quantity: Float!
+    unit: String! 
+  },
+  input IngredientBaseInput {
+    id: ID!
+    name: String!
+    type: String!
+  },
+  input InstructionInput {  
+    id: ID!
+    stepNumber: Int!
+    description: String!
+  },
+  input SubstitutionInput {
+    originalIngredient: IngredientInput!
+    substituteIngredient: IngredientInput!
+    ratio: Float!
+    notes: String
+  },
+  input CategoryInput {
+    id: ID! 
+    name: String!
+    description: String!
+  },
+  
   type IngredientBase {
     id: ID!
     name: String!

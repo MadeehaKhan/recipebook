@@ -5,7 +5,7 @@ const connectionString =
   process.env.PG_CONNECTION ||
   "postgresql://postgres:postgres@postgres:5432/recipebook";
 
-export const pool = new Pool({
+const pool = new Pool({
   connectionString,
   max: parseInt(process.env.PG_POOL_MAX || "10", 10),
   idleTimeoutMillis: parseInt(process.env.PG_IDLE_TIMEOUT || "30000", 10),
@@ -16,8 +16,8 @@ export const pool = new Pool({
       : false,
 });
 
-pool.on("error", (err: Error) => {
+pool.on("error", (err) => {
   console.error("Unexpected PG client error", err);
 });
 
-
+export { pool };

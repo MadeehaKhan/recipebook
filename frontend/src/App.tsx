@@ -12,7 +12,7 @@ const App = () => {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const checkBackend = async (): Promise<void> => {
+  const checkLoading  = async (): Promise<void> => {
     setLoading(true);
     try {
       const response = await axios.get<HealthResponse>("/api/health");
@@ -33,7 +33,7 @@ const App = () => {
         Vite + React + Node.js + PostgreSQL
       </h1>
       <button
-        onClick={checkBackend}
+        onClick={checkLoading}
         disabled={loading}
         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300 transition-colors"
       >
