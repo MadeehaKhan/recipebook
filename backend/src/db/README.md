@@ -156,7 +156,7 @@ Indexes:
 
 - Primary keys on all tables
 - Foreign key indexes on relationship columns
-- Additional indexes for common lookups (e.g., category_id, contributor)
+- Additional indexes for common lookups (e.g., category_id, contributed_by)
 
 Note: Ensure your `init-db.sh` contains the full CREATE TABLE statements for the above schema (remove placeholder sections and trailing commas).
 

@@ -13,7 +13,7 @@ type Recipe {
   servings: Float!
   notes: [String!]
   substitutions: [Substitution!]!
-  contributedBy: String!
+  contributed_by: String!
 }
 
 type Instruction {

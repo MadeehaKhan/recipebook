@@ -5,21 +5,20 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
-import { pool } from "./db/connect";
-import { typeDefs } from "./typeDefs";
-import { resolvers } from "./resolvers";
-import {
-  getAllRecipes,
-  getRecipeById,
-  getRecipesByCategory,
-  getRecipesByIngredient,
-  getRecipesByKeyword,
-} from "./db/queries";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { pool } from "./db/connect.js";
+import { resolvers } from "./resolvers.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
-const app: express.Application = express();
+const app = express();
 
 /**
  * Middleware
@@ -35,15 +34,15 @@ app.use(
 );
 app.set("trust proxy", 1);
 
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: parseInt(process.env.RATE_LIMIT_MAX || "100", 10),
-//   standardHeaders: true,
-//   legacyHeaders: false,
-//   skip: () =>
-//     process.env.RATE_LIMIT_ENABLED === "false" || NODE_ENV === "development",
-// });
-// app.use(limiter);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX || "100", 10),
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () =>
+    process.env.RATE_LIMIT_ENABLED === "false" || NODE_ENV === "development",
+});
+app.use(limiter);
 
 /**
  * REST API Routes
@@ -67,6 +66,9 @@ app.get("/api/health", async (req: Request, res: Response): Promise<void> => {
  * Start Server
  */
 const startServer = async (): Promise<void> => {
+  const schemaPath = join(__dirname, "db", "schema.graphql");
+  const typeDefs = readFileSync(schemaPath, "utf-8");
+
   try {
     const server = new ApolloServer({
       typeDefs,
@@ -110,8 +112,6 @@ const startServer = async (): Promise<void> => {
   }
 };
 
-if (require.main === module) {
-  startServer();
-}
+startServer();
 
 export { app };

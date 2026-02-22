@@ -47,6 +47,10 @@ RecipeBook/
 └── package.json
 ```
 
+## Project Figma
+
+Link to view project Figma: https://www.figma.com/design/Iu5Z0fNBJxHBmTsSVJv8Wr/Untitled?node-id=0-1&t=PibSJ5FkYkIXeDoh-1 
+
 ## Quick Start
 
 ### Prerequisites
