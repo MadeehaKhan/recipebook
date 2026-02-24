@@ -4,8 +4,7 @@ import {
   getRecipesByCategory,
   getRecipesByIngredient,
   getRecipesByKeyword,
-} from "./db/queries";
-import { RecipeResolvers } from "./models";
+} from "./db/queries.js";
 
 export const resolvers = {
   Query: {
@@ -17,33 +16,30 @@ export const resolvers = {
     },
     recipesByCategory: async (
       _parent: any,
-      args: { discriminator: string; limit?: number },
+      args: { category: string; limit?: number },
     ) => {
-      return await getRecipesByCategory(args.discriminator, args.limit);
+      return await getRecipesByCategory(args.category, args.limit);
     },
     recipesByIngredient: async (
       _parent: any,
-      args: { discriminator: string; limit?: number },
+      args: { ingredient: string; limit?: number },
     ) => {
-      return await getRecipesByIngredient(args.discriminator, args.limit);
+      return await getRecipesByIngredient(args.ingredient, args.limit);
     },
     recipesByKeyword: async (
       _parent: any,
-      args: { discriminator: string; limit?: number },
+      args: { keyword: string; limit?: number },
     ) => {
-      return await getRecipesByKeyword(args.discriminator, args.limit);
+      return await getRecipesByKeyword(args.keyword, args.limit);
     },
   },
 
   Mutation: {
-    addRecipe: async (_parent: any, args: { input: RecipeResolvers }) => {
+    addRecipe: async (_parent: any, args: any) => {
       // Implementation here
       throw new Error("Not implemented");
     },
-    modifyRecipe: async (
-      _parent: any,
-      args: { id: string; input: RecipeResolvers },
-    ) => {
+    modifyRecipe: async (_parent: any, args: any) => {
       // Implementation here
       throw new Error("Not implemented");
     },
